@@ -1,0 +1,44 @@
+- hosts: all
+  tasks:
+  - copy:
+      src: "/etc/yum.repos.d/d.repo"
+      dest: "/etc/yum.repos.d"
+
+  - command: "yum install docker-ce --nobest -y"
+
+  - service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - command: "pip3 install docker-py" 
+
+  - docker_image:
+      name: "httpd"
+      source: pull
+
+  - name: Stopping Firewall
+    service:
+      name: firewalld
+      state: stopped
+  - name: "creating directory"
+    file:
+       path: "/myws"
+       state: directory
+
+  - copy:
+       dest: "/myws/a.html"
+       content: "We are performing Task 10."
+
+
+  - name: Running Docker Container
+    docker_container:
+        name: "myos1"
+        image: "httpd"
+        state: started
+        exposed_ports: 
+        - "80"
+        ports:
+        -  "8081:80"
+        volumes:
+        - /myws:/usr/local/apache2/htdocs/
